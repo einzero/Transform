@@ -1,16 +1,14 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, REAL
 from datetime import datetime, timedelta
 
 Base = declarative_base()
-
-from sqlalchemy import Column, Integer, String, Float
 
 class Price(Base):
     __tablename__ = 'prices'
 
     time = Column(String(30), primary_key=True)
-    nav = Column(Float)
+    nav = Column(REAL)
     sell1 = Column(Integer)
     sell1_cnt = Column(Integer)
     sell2 = Column(Integer)

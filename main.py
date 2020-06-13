@@ -2,8 +2,9 @@ import copy
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.session import make_transient
 from price import Price
-from datetime import datetime
+
 import os
 
 def run(key):
@@ -14,20 +15,23 @@ def run(key):
     prices_by_date = {}
     prices = []
     cur_date = None
-    for instance in session.query(Price).limit(2000):
+    for instance in session.query(Price):
         time = instance.date_time()
         date = time.date()
 
         if cur_date is None:
             cur_date = date
-        elif cur_date is not date:
+        elif cur_date != date:
             prices_by_date[cur_date] = prices
             prices = []
             cur_date = date
 
-        new_inst = copy.deepcopy(instance)
-        new_inst.time = str(time)
-        prices.append(new_inst)
+        session.expunge(instance)
+        make_transient(instance)
+        instance.time = time.strftime('%Y-%m-%d %H:%M:%S.%f')
+        prices.append(instance)
+
+    engine.dispose()
 
     if len(prices) > 0:
         prices_by_date[cur_date] = prices
@@ -41,12 +45,10 @@ def run(key):
         session = Session()
         Price.metadata.create_all(engine)
 
-        for inst in v:
-            print(len(prices_by_date.keys()))
-            #session.add(inst)
+        session.add_all(v)
         session.commit()
-
-
+        engine.dispose()
 
 if __name__ == '__main__':
-    run('251340')
+    keys = ['251340', '069500', '102110', '114800', '148020', '229200', '232080']
+    for key in keys: run(key)
