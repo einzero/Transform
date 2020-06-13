@@ -15,6 +15,8 @@ def run(key):
     prices_by_date = {}
     prices = []
     cur_date = None
+
+    # read price data from the SQLite file
     for instance in session.query(Price):
         time = instance.date_time()
         date = time.date()
@@ -39,6 +41,7 @@ def run(key):
     if not os.path.isdir(key):
         os.mkdir(key)
 
+    # Save each price data to the SQLite file by date
     for k,v in prices_by_date.items():
         engine = create_engine('sqlite:///{0}/{1}.db'.format(key, k), echo=True)
         Session = sessionmaker(bind=engine)
